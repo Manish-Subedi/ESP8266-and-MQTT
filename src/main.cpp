@@ -22,18 +22,15 @@ void cbMQTT(char* topic, byte* payload, unsigned int length);
 bool reconnectMQTT(PubSubClient &cln, String &clnName);//, const char* user, const char* psk);
 
 String hostName; //used in MQTT publish
-String mySSID = "MANIS"; //wifi parameter
-String myPSK = "123IscA!"; //wifi parameter
+String mySSID = "ssid"; //wifi parameter
+String myPSK = "psk"; //wifi parameter
 
 //instantiate object client
 WiFiClient myMqtt;
 PubSubClient PSC(myMqtt);
 
-//const IPAddress BROKER_IP(109,230,236,5); //MQTT broker's address
 const char* BROKER_URL {"test.mosquitto.org"};
 const uint16_t BROKER_PORT = 1883; //MQTT default port 
-//const char* MQTT_USER = "JonSnow";
-//const char* MQTT_PWD = "knowsnothing";
 
 long prevTime;
 
@@ -42,7 +39,7 @@ DHTesp myDht;
 float Tp = 0.0, Hm = 0.0, pubT = 0.0, pubH = 0.0;
 
 /*
-//instantiate an object for HCSR04
+//instantiate an object for HCSR04 (**when another library is in use)
 HCSR04 myHC(TRIG_PIN, ECHO_PIN, 20, 4000);
 long duration;
 int distance = 0;
@@ -53,7 +50,7 @@ NewPing sonar(TRIG_PIN, ECHO_PIN, 300);
 int distance = 0, pubD=0;
 
 void setup(){
-  hostName = "1111angel";
+  hostName = "angel";
   //WiFi.hostName(hostName);
   //init serial communication
   Serial.begin(115200);
@@ -69,6 +66,7 @@ void setup(){
   //configure WIFI
   WiFi.begin(mySSID, myPSK);
   int i = 0;
+  // 20 Wifi connection attempts
   while ((WiFi.status() != WL_CONNECTED) && i < 20){
     Serial.printf("Connection Status: %d\n", WiFi.status());
     delay(500);
@@ -79,7 +77,7 @@ void setup(){
 
   WiFi.setAutoConnect(true);
   WiFi.setAutoReconnect(true);
-
+  
   PSC.setServer(BROKER_URL, BROKER_PORT);
   PSC.setCallback(cbMQTT);
  
@@ -94,7 +92,7 @@ void loop(){
     tpNew = myDht.getTemperature();
     hmNew = myDht.getHumidity();
     distNew = sonar.ping_cm();
-    /*
+    /*    **If another library is used**
     //clear the trig-pin
     digitalWrite(TRIG_PIN, LOW);
     delayMicroseconds(2); 
@@ -143,7 +141,7 @@ void loop(){
   
 }
 
-//callback function 
+//callback function for MQTT payload
 void cbMQTT(char* topic, byte* payload, unsigned int length){
   String t = (String)topic, p;
   //save payload as string chars
@@ -151,7 +149,6 @@ void cbMQTT(char* topic, byte* payload, unsigned int length){
     p += (char)payload[i];
   }
   Serial.println("[cbMQTT] Message: " + t + " = " + p + " Length = " + (String)length);
-
 }
 
 //connect and reconnect 
